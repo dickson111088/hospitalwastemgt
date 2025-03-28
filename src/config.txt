@@ -1,0 +1,39 @@
+# HospitalWasteManagement/src/config.py
+
+import os
+import pandas as pd
+
+# Define the path to the Excel configuration file.
+# You can place the file in the same directory as config.py or in a subfolder (e.g., "data").
+CONFIG_FILE = os.path.join(os.path.dirname(__file__), "config_data.xlsx")
+
+def load_sheet_as_dict(sheet_name):
+    """
+    Loads a given sheet from the Excel configuration file and converts it to a dictionary.
+    
+    The Excel sheet should have its first column as the index (the unique key for each row).
+    """
+    try:
+        df = pd.read_excel(CONFIG_FILE, sheet_name=sheet_name, index_col=0)
+        # Convert the DataFrame into a dictionary of dictionaries.
+        return df.to_dict(orient="index")
+    except Exception as e:
+        raise RuntimeError(f"Error loading sheet '{sheet_name}' from {CONFIG_FILE}: {e}")
+
+# Load configuration data from the Excel file.
+EMISSION_FACTORS = load_sheet_as_dict("EmissionFactors")
+DEFAULT_COMPOSITION = load_sheet_as_dict("DefaultComposition")
+HOSPITAL_INDIRECT_FACTORS = load_sheet_as_dict("HospitalIndirectFactors")
+IMPACT_CATEGORIES = load_sheet_as_dict("ImpactCategories")
+NORMALIZATION_FACTORS = load_sheet_as_dict("NormalizationFactors")
+
+# (Optional) You might want to process the Impact Categories data further.
+# For example, if the Excel sheet stores impact methods in separate columns, you can convert
+# each row to a tuple. The following code assumes that the sheet "ImpactCategories" has columns:
+# "Category", "Method1", "Method2", "Method3", where "Category" is the index.
+for key, value in IMPACT_CATEGORIES.items():
+    # Convert the dictionary for each impact category into a tuple.
+    # Adjust the field names if needed.
+    IMPACT_CATEGORIES[key] = (value.get("Method1"), value.get("Method2"), value.get("Method3"))
+
+# Now, all your constants are loaded from an external Excel file.
